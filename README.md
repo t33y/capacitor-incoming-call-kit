@@ -17,19 +17,19 @@ npx cap sync
 
 <docgen-index>
 
-* [`onMethod(...)`](#onmethod)
-* [Interfaces](#interfaces)
-* [Type Aliases](#type-aliases)
+- [`doMethod(...)`](#domethod)
+- [Interfaces](#interfaces)
+- [Type Aliases](#type-aliases)
 
 </docgen-index>
 
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
 
-### onMethod(...)
+### doMethod(...)
 
 ```typescript
-onMethod(options: { options: string; methodName: MethodNames; parsedOptions: CallKitParams; }) => Promise<Responses>
+doMethod(options: { options: string; methodName: MethodNames; parsedOptions: CallKitParams; }) => Promise<Responses>
 ```
 
 | Param         | Type                                                                                                                                             |
@@ -38,11 +38,9 @@ onMethod(options: { options: string; methodName: MethodNames; parsedOptions: Cal
 
 **Returns:** <code>Promise&lt;<a href="#responses">Responses</a>&gt;</code>
 
---------------------
-
+---
 
 ### Interfaces
-
 
 #### CallKitParams
 
@@ -69,7 +67,6 @@ onMethod(options: { options: string; methodName: MethodNames; parsedOptions: Cal
 | **`android`**                         | <code><a href="#androidparams">AndroidParams</a></code>           |
 | **`ios`**                             | <code><a href="#iosparams">IOSParams</a></code>                   |
 
-
 #### NotificationParams
 
 | Prop                   | Type                 |
@@ -80,7 +77,6 @@ onMethod(options: { options: string; methodName: MethodNames; parsedOptions: Cal
 | **`callbackText`**     | <code>string</code>  |
 | **`isShowCallback`**   | <code>boolean</code> |
 | **`int`**              | <code>number</code>  |
-
 
 #### AndroidParams
 
@@ -100,7 +96,6 @@ onMethod(options: { options: string; methodName: MethodNames; parsedOptions: Cal
 | **`isShowFullLockedScreen`**              | <code>boolean</code> |
 | **`isImportant`**                         | <code>boolean</code> |
 | **`isBot`**                               | <code>boolean</code> |
-
 
 #### IOSParams
 
@@ -122,17 +117,19 @@ onMethod(options: { options: string; methodName: MethodNames; parsedOptions: Cal
 | **`supportsUngrouping`**                    | <code>boolean</code> |
 | **`ringtonePath`**                          | <code>string</code>  |
 
-
 ### Type Aliases
-
 
 #### Responses
 
 <code>void | { isMuted: boolean } | { calls: CallKitParams[] } | { isVersionOk: boolean } | { devicePushTokenVoIP: string }</code>
 
-
 #### MethodNames
 
-<code>'showCallkitIncoming' | 'checkIsVersionOk' | 'sendPendingAcceptEvent' | 'showCallkitIncomingSilently' | 'showMissCallNotification' | 'startCall' | 'muteCall' | 'holdCall' | 'isMuted' | 'endCall' | 'callConnected' | 'endAllCalls' | 'activeCalls' | 'getDevicePushTokenVoIP' | 'silenceEvents' | 'requestNotificationPermission' | 'requestFullIntentPermission' | 'hideCallkitIncoming' | 'endNativeSubsystemOnly' | 'setAudioRoute'</code>
+<code>
+  'showCallkitIncoming' | 'checkIsVersionOk' | 'sendPendingAcceptEvent' | 'showCallkitIncomingSilently' |
+  'showMissCallNotification' | 'startCall' | 'muteCall' | 'holdCall' | 'isMuted' | 'endCall' | 'callConnected' |
+  'endAllCalls' | 'activeCalls' | 'getDevicePushTokenVoIP' | 'silenceEvents' | 'requestNotificationPermission' |
+  'requestFullIntentPermission' | 'hideCallkitIncoming' | 'endNativeSubsystemOnly' | 'setAudioRoute'
+</code>
 
 </docgen-api>

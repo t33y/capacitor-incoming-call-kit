@@ -23,7 +23,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
     public let identifier = "SwiftFlutterCallkitIncomingPlugin"
     public let jsName = "FlutterCallkitIncoming"
     public let pluginMethods: [CAPPluginMethod] = [
-        CAPPluginMethod(name: "onMethod", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "doMethod", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "register", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "unregister", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "checkPermissions", returnType: CAPPluginReturnPromise),
@@ -305,7 +305,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         ])
     }
     
-    @objc public func onMethod(_ pluginCall: CAPPluginCall) {
+    @objc public func doMethod(_ pluginCall: CAPPluginCall) {
         let name = pluginCall.getString("methodName") ?? ""
         let options = pluginCall.getObject("parsedOptions")
         switch name {

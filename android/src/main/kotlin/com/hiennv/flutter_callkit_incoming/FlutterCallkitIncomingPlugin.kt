@@ -565,7 +565,7 @@ class FlutterCallkitIncomingPlugin : Plugin() {
     }
 
     @PluginMethod
-    public fun onMethod(call: PluginCall) {
+    public fun doMethod(call: PluginCall) {
         try {
             val name: String = call.getString("methodName")!!
             val ojsString: String = call.getString("options")!!
