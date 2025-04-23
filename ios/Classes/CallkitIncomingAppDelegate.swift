@@ -14,11 +14,11 @@ public protocol CallkitIncomingAppDelegate : NSObjectProtocol {
     
     func onTimeOut(_ call: Call)
     
-    func onEndCall(_ data: Data)
+    func onEndCall(_ data: CallData)
     
-    func onStartCall(_ data: Data)
+    func onStartCall(_ data: CallData)
     
-    func onConnectCall(_ data: Data)
+    func onConnectCall(_ data: CallData)
     
     func onHoldCall(_ callId: String, _ onHold: Bool)
     
@@ -32,6 +32,6 @@ public protocol CallkitIncomingAppDelegate : NSObjectProtocol {
     
     func didDeactivateAudioSession(_ audioSession: AVAudioSession)
     
-    func reportIncomingCall(_ data: Data, _ remoteHandle: CXHandle?, completion: ((Error?) -> Void)?)
+    func reportIncomingCall(_ data: CallData, _ remoteHandle: CXHandle?, completion: ((Error?) -> Void)?)
     
 }

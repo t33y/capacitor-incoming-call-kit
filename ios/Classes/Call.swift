@@ -11,7 +11,7 @@ import AVFoundation
 public class Call: NSObject {
     
     public var uuid: UUID
-    public var data: Data
+    public var data: CallData
     public var isOutGoing: Bool
     
     public var handle: String?
@@ -88,7 +88,7 @@ public class Call: NSObject {
         return Date().timeIntervalSince(connectDate)
     }
     
-    init(uuid: UUID, data: Data, isOutGoing: Bool = false){
+    init(uuid: UUID, data: CallData, isOutGoing: Bool = false){
         self.uuid = uuid
         self.data = data
         self.isOutGoing = isOutGoing
@@ -126,7 +126,7 @@ public class Call: NSObject {
     
 }
 
-@objc public class Data: NSObject {
+@objc public class CallData: NSObject {
     @objc public var uuid: String
     @objc public var nameCaller: String
     @objc public var appName: String

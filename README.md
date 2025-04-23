@@ -17,14 +17,179 @@ npx cap sync
 
 <docgen-index>
 
-- [`doMethod(...)`](#domethod)
-- [Interfaces](#interfaces)
-- [Type Aliases](#type-aliases)
+* [`unregisterProximityListener()`](#unregisterproximitylistener)
+* [`toggleSpeaker(...)`](#togglespeaker)
+* [`isSpeakerOn()`](#isspeakeron)
+* [`toggleMicrophone(...)`](#togglemicrophone)
+* [`isMicrophoneMuted()`](#ismicrophonemuted)
+* [`createAnswer()`](#createanswer)
+* [`createOffer(...)`](#createoffer)
+* [`setRemoteSdp(...)`](#setremotesdp)
+* [`setRemoteIceCandidate(...)`](#setremoteicecandidate)
+* [`closePeerConnection()`](#closepeerconnection)
+* [`getPeerConnectionStatus()`](#getpeerconnectionstatus)
+* [`getRemoteDescriptionStatus()`](#getremotedescriptionstatus)
+* [`doMethod(...)`](#domethod)
+* [Interfaces](#interfaces)
+* [Type Aliases](#type-aliases)
+* [Enums](#enums)
 
 </docgen-index>
 
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
+
+### unregisterProximityListener()
+
+```typescript
+unregisterProximityListener() => Promise<{ status: string; }>
+```
+
+**Returns:** <code>Promise&lt;{ status: string; }&gt;</code>
+
+--------------------
+
+
+### toggleSpeaker(...)
+
+```typescript
+toggleSpeaker({ useSpeaker }: { useSpeaker: boolean; }) => Promise<{ isSpeakerOn: boolean; }>
+```
+
+| Param     | Type                                  |
+| --------- | ------------------------------------- |
+| **`__0`** | <code>{ useSpeaker: boolean; }</code> |
+
+**Returns:** <code>Promise&lt;{ isSpeakerOn: boolean; }&gt;</code>
+
+--------------------
+
+
+### isSpeakerOn()
+
+```typescript
+isSpeakerOn() => Promise<{ isSpeakerOn: boolean; }>
+```
+
+**Returns:** <code>Promise&lt;{ isSpeakerOn: boolean; }&gt;</code>
+
+--------------------
+
+
+### toggleMicrophone(...)
+
+```typescript
+toggleMicrophone({ mute }: { mute: boolean; }) => Promise<{ isMicrophoneMuted: boolean; }>
+```
+
+| Param     | Type                            |
+| --------- | ------------------------------- |
+| **`__0`** | <code>{ mute: boolean; }</code> |
+
+**Returns:** <code>Promise&lt;{ isMicrophoneMuted: boolean; }&gt;</code>
+
+--------------------
+
+
+### isMicrophoneMuted()
+
+```typescript
+isMicrophoneMuted() => Promise<{ isMicrophoneMuted: boolean; }>
+```
+
+**Returns:** <code>Promise&lt;{ isMicrophoneMuted: boolean; }&gt;</code>
+
+--------------------
+
+
+### createAnswer()
+
+```typescript
+createAnswer() => Promise<SessionDescription>
+```
+
+**Returns:** <code>Promise&lt;<a href="#sessiondescription">SessionDescription</a>&gt;</code>
+
+--------------------
+
+
+### createOffer(...)
+
+```typescript
+createOffer({ iceServers, }: { iceServers?: [ { urls: string[]; username: string; credential: string; } ]; }) => Promise<SessionDescription>
+```
+
+| Param     | Type                                                                                       |
+| --------- | ------------------------------------------------------------------------------------------ |
+| **`__0`** | <code>{ iceServers?: [{ urls: string[]; username: string; credential: string; }]; }</code> |
+
+**Returns:** <code>Promise&lt;<a href="#sessiondescription">SessionDescription</a>&gt;</code>
+
+--------------------
+
+
+### setRemoteSdp(...)
+
+```typescript
+setRemoteSdp({ sdp, type, iceServers, }: { sdp: string; type: string; iceServers?: [ { urls: string[]; username: string; credential: string; } ]; }) => Promise<{ status: string; }>
+```
+
+| Param     | Type                                                                                                                  |
+| --------- | --------------------------------------------------------------------------------------------------------------------- |
+| **`__0`** | <code>{ sdp: string; type: string; iceServers?: [{ urls: string[]; username: string; credential: string; }]; }</code> |
+
+**Returns:** <code>Promise&lt;{ status: string; }&gt;</code>
+
+--------------------
+
+
+### setRemoteIceCandidate(...)
+
+```typescript
+setRemoteIceCandidate({ sdpMLineIndex, sdpMid, candidate }: any) => Promise<{ status: string; }>
+```
+
+| Param     | Type             |
+| --------- | ---------------- |
+| **`__0`** | <code>any</code> |
+
+**Returns:** <code>Promise&lt;{ status: string; }&gt;</code>
+
+--------------------
+
+
+### closePeerConnection()
+
+```typescript
+closePeerConnection() => Promise<{ status: string; }>
+```
+
+**Returns:** <code>Promise&lt;{ status: string; }&gt;</code>
+
+--------------------
+
+
+### getPeerConnectionStatus()
+
+```typescript
+getPeerConnectionStatus() => Promise<{ status: string; }>
+```
+
+**Returns:** <code>Promise&lt;{ status: string; }&gt;</code>
+
+--------------------
+
+
+### getRemoteDescriptionStatus()
+
+```typescript
+getRemoteDescriptionStatus() => Promise<{ status: string; }>
+```
+
+**Returns:** <code>Promise&lt;{ status: string; }&gt;</code>
+
+--------------------
+
 
 ### doMethod(...)
 
@@ -38,9 +203,19 @@ doMethod(options: { options: string; methodName: MethodNames; parsedOptions: Cal
 
 **Returns:** <code>Promise&lt;<a href="#responses">Responses</a>&gt;</code>
 
----
+--------------------
+
 
 ### Interfaces
+
+
+#### SessionDescription
+
+| Prop       | Type                                        |
+| ---------- | ------------------------------------------- |
+| **`type`** | <code><a href="#sdptype">SdpType</a></code> |
+| **`sdp`**  | <code>string</code>                         |
+
 
 #### CallKitParams
 
@@ -53,6 +228,7 @@ doMethod(options: { options: string; methodName: MethodNames; parsedOptions: Cal
 | **`handle`**                          | <code>string</code>                                               |
 | **`type`**                            | <code>number</code>                                               |
 | **`isOnHold`**                        | <code>boolean</code>                                              |
+| **`isMuted`**                         | <code>boolean</code>                                              |
 | **`normalHandle`**                    | <code>number</code>                                               |
 | **`duration`**                        | <code>number</code>                                               |
 | **`textAccept`**                      | <code>string</code>                                               |
@@ -67,6 +243,7 @@ doMethod(options: { options: string; methodName: MethodNames; parsedOptions: Cal
 | **`android`**                         | <code><a href="#androidparams">AndroidParams</a></code>           |
 | **`ios`**                             | <code><a href="#iosparams">IOSParams</a></code>                   |
 
+
 #### NotificationParams
 
 | Prop                   | Type                 |
@@ -77,6 +254,7 @@ doMethod(options: { options: string; methodName: MethodNames; parsedOptions: Cal
 | **`callbackText`**     | <code>string</code>  |
 | **`isShowCallback`**   | <code>boolean</code> |
 | **`int`**              | <code>number</code>  |
+
 
 #### AndroidParams
 
@@ -96,6 +274,7 @@ doMethod(options: { options: string; methodName: MethodNames; parsedOptions: Cal
 | **`isShowFullLockedScreen`**              | <code>boolean</code> |
 | **`isImportant`**                         | <code>boolean</code> |
 | **`isBot`**                               | <code>boolean</code> |
+
 
 #### IOSParams
 
@@ -117,19 +296,30 @@ doMethod(options: { options: string; methodName: MethodNames; parsedOptions: Cal
 | **`supportsUngrouping`**                    | <code>boolean</code> |
 | **`ringtonePath`**                          | <code>string</code>  |
 
+
 ### Type Aliases
+
 
 #### Responses
 
 <code>void | { isMuted: boolean } | { calls: CallKitParams[] } | { isVersionOk: boolean } | { devicePushTokenVoIP: string }</code>
 
+
 #### MethodNames
 
-<code>
-  'showCallkitIncoming' | 'checkIsVersionOk' | 'sendPendingAcceptEvent' | 'showCallkitIncomingSilently' |
-  'showMissCallNotification' | 'startCall' | 'muteCall' | 'holdCall' | 'isMuted' | 'endCall' | 'callConnected' |
-  'endAllCalls' | 'activeCalls' | 'getDevicePushTokenVoIP' | 'silenceEvents' | 'requestNotificationPermission' |
-  'requestFullIntentPermission' | 'hideCallkitIncoming' | 'endNativeSubsystemOnly' | 'setAudioRoute'
-</code>
+<code>'showCallkitIncoming' | 'checkIsVersionOk' | 'sendPendingAcceptEvent' | 'showCallkitIncomingSilently' | 'showMissCallNotification' | 'startCall' | 'muteCall' | 'holdCall' | 'isMuted' | 'endCall' | 'callConnected' | 'endAllCalls' | 'activeCalls' | 'getDevicePushTokenVoIP' | 'silenceEvents' | 'requestNotificationPermission' | 'requestFullIntentPermission' | 'hideCallkitIncoming' | 'endNativeSubsystemOnly' | 'setAudioRoute'</code>
+
+
+### Enums
+
+
+#### SdpType
+
+| Members        | Value                   |
+| -------------- | ----------------------- |
+| **`offer`**    | <code>'offer'</code>    |
+| **`prAnswer`** | <code>'prAnswer'</code> |
+| **`answer`**   | <code>'answer'</code>   |
+| **`rollback`** | <code>'rollback'</code> |
 
 </docgen-api>

@@ -1,6 +1,7 @@
 package com.hiennv.flutter_callkit_incoming
 
 import android.annotation.SuppressLint
+import android.content.SharedPreferences
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -9,6 +10,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.NonNull
+import android.media.AudioManager
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Klaxon
 import com.beust.klaxon.Parser
@@ -24,15 +26,25 @@ import org.json.JSONObject
 import java.lang.ref.WeakReference
 
 import android.Manifest
+import android.app.ActivityManager
+import android.app.Application
 import android.app.Notification
 import android.app.NotificationManager
+import android.content.ComponentCallbacks2
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.media.AudioDeviceInfo
 import android.os.Bundle
+import android.os.PowerManager
 import androidx.appcompat.app.AppCompatActivity
 import com.getcapacitor.Bridge
 import com.getcapacitor.annotation.Permission
 import com.getcapacitor.PermissionState
 import com.getcapacitor.annotation.PermissionCallback
+import com.google.android.gms.common.util.CollectionUtils.mapOf
 import com.google.android.gms.tasks.Task
 import com.google.firebase.messaging.CommonNotificationBuilder
 import com.google.firebase.messaging.FirebaseMessaging
@@ -53,7 +65,6 @@ import java.util.Arrays
 )
 class FlutterCallkitIncomingPlugin : Plugin() {
     companion object {
-
         const val EXTRA_CALLKIT_CALL_DATA = "EXTRA_CALLKIT_CALL_DATA"
 
         @SuppressLint("StaticFieldLeak")
@@ -68,6 +79,11 @@ class FlutterCallkitIncomingPlugin : Plugin() {
         var lastIncomingCallEvent: Map<String, Map<String, Any>>? = null
         private const val EVENT_TOKEN_CHANGE = "registration"
         private const val EVENT_TOKEN_ERROR = "registrationError"
+        private var storedContext: Context? = null
+
+        fun getContext(): Context? {
+            return storedContext
+        }
 
         fun onNewToken(newToken: String?) {
             val pushPlugin =
@@ -76,27 +92,44 @@ class FlutterCallkitIncomingPlugin : Plugin() {
         }
 
         fun sendRemoteMessage(remoteMessage: RemoteMessage, fcmContext: Context) {
-            val callOptions: String? = remoteMessage.data["call"]
-            val deleteCallOptions: String? = remoteMessage.data["deleteCall"]
-            val pushPlugin =
-                pushNotificationsInstance
-            if (pushPlugin != null) {
-                pushPlugin.fireNotification(remoteMessage)
-            } else {
-                lastMessage = remoteMessage
-            }
-            if (callOptions != null || deleteCallOptions != null) {
-                val activeInstance = pushPlugin ?: FlutterCallkitIncomingPlugin()
-                if (pushPlugin == null) {
-                    initSharedInstance(fcmContext, activeInstance)
-                }
-                if (deleteCallOptions != null) activeInstance.endCall(Data(jsonParser(deleteCallOptions)))
-                if (callOptions != null) activeInstance.showIncomingNotification(Data(jsonParser(callOptions)))
-            }
+            Log.d("MessagingService", "Received non-VoIP notification, ignoring...")
+           val callOptions: String? = remoteMessage.data["call"]
+           val deleteCallOptions: String? = remoteMessage.data["deleteCall"]
+           val pushPlugin = pushNotificationsInstance
+            Log.d("pluginM", "$pushPlugin")
+             Log.d("remoteM", "$remoteMessage")
+             Log.d("lastM", "$lastMessage")
+           if (pushPlugin != null) {
+               pushPlugin.fireNotification(remoteMessage)
+           } else {
+               lastMessage = remoteMessage
+                Log.d("remoteM2", "$remoteMessage")
+                Log.d("LastM2", "$lastMessage")
+           }
+           if (callOptions != null || deleteCallOptions != null) {
+               val activeInstance = pushPlugin ?: FlutterCallkitIncomingPlugin()
+               if (pushPlugin == null) {
+                   initSharedInstance(fcmContext, activeInstance)
+               }
+               if (deleteCallOptions != null) activeInstance.endCall(Data(jsonParser(deleteCallOptions)))
+               if (callOptions != null) activeInstance.showIncomingNotification(Data(jsonParser(callOptions)))
+           }
         }
+
+         public fun isAppRunning(): Boolean{
+                val appContext = getContext()
+                if (appContext == null) {
+                    return false
+                }
+                val activityManager = appContext.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                val myPid = android.os.Process.myPid()
+                val isAppAlive = activityManager.runningAppProcesses?.any { it.pid == myPid } ?: false
+                return isAppAlive && staticBridge != null && staticBridge!!.webView != null
+            }
 
         val pushNotificationsInstance: FlutterCallkitIncomingPlugin?
             get() {
+
                 if (staticBridge != null && staticBridge!!.webView != null) {
                     val handle =
                         staticBridge!!.getPlugin("FlutterCallkitIncoming")
@@ -110,9 +143,9 @@ class FlutterCallkitIncomingPlugin : Plugin() {
             return instance
         }
 
-        public fun hasInstance(): Boolean {
-            return ::instance.isInitialized
-        }
+       public fun hasInstance(): Boolean {
+           return ::instance.isInitialized
+       }
 
         fun initSharedInstance(context: Context, pluginInstance: FlutterCallkitIncomingPlugin) {
             instance = pushNotificationsInstance ?: pluginInstance
@@ -120,14 +153,27 @@ class FlutterCallkitIncomingPlugin : Plugin() {
             instance.context = context
         }
 
-        fun sendEvent(event: String, mapBody: Map<String, Any>) {
-            val body = JSObject()
-            for ((key, value) in mapBody) {
-                body.put(key, value)
+        fun convertToJSObject(map: Map<String, Any>): JSObject {
+            val jsObject = JSObject()
+            for ((key, value) in map) {
+                when (value) {
+                    is Map<*, *> -> jsObject.put(key, convertToJSObject(value as Map<String, Any>)) // Recursively convert nested maps
+                    is List<*> -> jsObject.put(key, JSArray(value as Collection<Any?>)) // Convert lists to JSArray
+                    else -> jsObject.put(key, value) // Put primitives directly
+                }
             }
+            return jsObject
+        }
+
+        fun sendEvent(event: String, mapBody: Map<String, Any>) {
+            val body = convertToJSObject(mapBody)
+
+//            for ((key, value) in mapBody) {
+//                body.put(key, value)
+//            }
             val pushPlugin =
                 pushNotificationsInstance
-            if (pushPlugin != null) {
+            if (isAppRunning() && pushPlugin != null) {
                 pushPlugin.notifyListeners(event, body)
             } else {
                 if (event == CallkitConstants.ACTION_CALL_ACCEPT) lastAcceptCallEvent = buildMap { put(event, mapBody) }
@@ -174,10 +220,23 @@ class FlutterCallkitIncomingPlugin : Plugin() {
     private var activity: Activity? = null
     private var context: Context? = null
     private var callkitNotificationManager: CallkitNotificationManager? = null
+   private lateinit var proximityManager: ProximitySensor
+
 
     override fun load() {
+
         activity = getActivity()
-        context = getActivity()?.applicationContext
+        context = activity?.applicationContext
+        val localContext = context
+       if(localContext is Context){
+            proximityManager = ProximitySensor(localContext)
+            proximityManager.initialize()
+
+//             val application = localContext.applicationContext as Application
+//           application.registerComponentCallbacks(this)
+            storedContext = localContext
+       }
+
         notificationManager =
             activity?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         firebaseMessagingService = MessagingService()
@@ -193,7 +252,11 @@ class FlutterCallkitIncomingPlugin : Plugin() {
             activity as AppCompatActivity,
             notificationManager!!, config
         )
+
     }
+
+
+
 
     override fun handleOnNewIntent(data: Intent) {
         super.handleOnNewIntent(data)
@@ -215,6 +278,185 @@ class FlutterCallkitIncomingPlugin : Plugin() {
             actionJson.put("notification", notificationJson)
             notifyListeners("pushNotificationActionPerformed", actionJson, true)
         }
+    }
+
+
+
+   @PluginMethod
+   fun unregisterProximityListener(call: PluginCall) {
+       proximityManager.unregisterListener()
+
+       val ret = JSObject().apply {
+           put("status", "unregistered proximity listener")
+       }
+       call.resolve(ret)
+   }
+
+        @PluginMethod
+        fun toggleSpeaker(call: PluginCall) {
+            val useSpeaker = call.getBoolean("useSpeaker", false) ?: false
+            val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+
+            if (audioManager == null) {
+                call.reject("AudioManager is unavailable")
+                return
+            }
+
+            Log.d("toggle speaker", "$useSpeaker")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12+
+                val devices = audioManager.availableCommunicationDevices
+                val speakerDevice = devices.find { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
+                val earpieceDevice = devices.find { it.type == AudioDeviceInfo.TYPE_BUILTIN_EARPIECE }
+
+                Log.d("devices v12", "$devices")
+
+                if (useSpeaker && speakerDevice != null) {
+                   proximityManager.unregisterListener()
+
+                    audioManager.setCommunicationDevice(speakerDevice) // Switch to speaker
+                    Log.d("speaker", "toggle speaker in v12 to speaker useSpeaker is $useSpeaker")
+
+                } else if (!useSpeaker && earpieceDevice != null) {
+                   proximityManager.registerListener()
+                    audioManager.setCommunicationDevice(earpieceDevice) // Switch back to earpiece
+                    Log.d("speaker", "toggle speaker in v12 to earpiece useSpeaker is $useSpeaker")
+                } else {
+                    call.reject("No suitable audio device found")
+                    return
+                }
+                val isSpeaker =  audioManager.communicationDevice?.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+                Log.d("speaker v12 value", "isSpeaker to return in v12 is $useSpeaker")
+                val ret = JSObject().apply {
+                    put("isSpeakerOn", isSpeaker)
+                }
+                call.resolve(ret)
+            }
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//
+//                    val devices = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+//                            .filter { it.isSink }
+//                    fun getDeviceId(): Int? {
+//                        // Check for devices in priority order
+//                        if(!useSpeaker){
+//                            for (device in devices) {
+//                                when (device.type) {
+//                                    AudioDeviceInfo.TYPE_BUILTIN_EARPIECE -> {
+//                                        return device.id // Return Built-in Earpiece ID
+//                                    }
+//                                    AudioDeviceInfo.TYPE_WIRED_HEADSET -> {
+//                                        return device.id // Return Wired Headset ID
+//                                    }
+//                                    AudioDeviceInfo.TYPE_WIRED_HEADPHONES -> {
+//                                        return device.id // Return Wired Headphones ID
+//                                    }
+//                                    AudioDeviceInfo.TYPE_BLUETOOTH_A2DP -> {
+//                                        return device.id // Return Bluetooth A2DP ID
+//                                    }
+//                                }
+//                            }
+//                        }else{
+//                            for (device in devices) {
+//                                when (device.type) {
+//                                    AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> {
+//                                        return device.id
+//                                    }
+//                                }
+//                            }
+//                        }
+//                        return null
+//                    }
+//                    val device = getDeviceId()
+//                    if(device != null){
+//                        val ret = JSObject().apply {
+//                            put("isSpeakerOn", useSpeaker)
+//                            put("device", device)
+//                        }
+//                        call.resolve(ret)
+//                    }
+//                }
+                call.reject("Device not compatible")
+//                @Suppress("DEPRECATION")
+//                audioManager.isSpeakerphoneOn = useSpeaker
+//                Log.d("speaker old value", "isSpeaker to return in old is $audioManager.isSpeakerphoneOn")
+//                @Suppress("DEPRECATION")
+//                val ret = JSObject().apply {
+//                    put("isSpeakerOn", audioManager.isSpeakerphoneOn)
+//                }
+//                call.resolve(ret)
+
+//            val isSpeaker = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//                audioManager.communicationDevice?.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+//            } else {
+//                @Suppress("DEPRECATION")  // Suppresses warning for deprecated methods
+//                audioManager.isSpeakerphoneOn
+//            }
+//            val ret = JSObject().apply {
+//                put("isSpeakerOn", isSpeaker)
+//            }
+//            call.resolve(ret)
+        }
+
+    @PluginMethod
+    fun isSpeakerOn(call: PluginCall) {
+        val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+        if (audioManager == null) {
+            call.reject("AudioManager is unavailable")
+            return
+        }
+
+
+//        val isSpeaker = deviceInfo?.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+//        val isSpeakerOn = audioManager.isSpeakerphoneOn()
+        val isSpeakerOn = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            audioManager.communicationDevice?.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+        } else {
+            @Suppress("DEPRECATION")  // Suppresses warning for deprecated methods
+            audioManager.isSpeakerphoneOn
+        }
+
+        val ret = JSObject().apply {
+            put("isSpeakerOn", isSpeakerOn)
+        }
+        call.resolve(ret)
+    }
+
+        @PluginMethod
+        fun toggleMicrophone(call: PluginCall) {
+            val muteMicrophone = call.getBoolean("mute", false) // Get the "mute" parameter from the call
+            val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+
+            if (audioManager == null) {
+                call.reject("AudioManager is unavailable")
+                return
+            }
+
+            // Toggle microphone mute status
+            audioManager.isMicrophoneMute = muteMicrophone!!
+
+            // Return the current microphone status
+            val ret = JSObject().apply {
+                put("isMicrophoneMuted", audioManager.isMicrophoneMute)
+            }
+            call.resolve(ret)
+        }
+
+    @PluginMethod
+    fun isMicrophoneMuted(call: PluginCall) {
+        val audioManager = context?.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+
+        if (audioManager == null) {
+            call.reject("AudioManager is unavailable")
+            return
+        }
+
+        // Get the current microphone mute status
+        val isMicrophoneMuted = audioManager.isMicrophoneMute
+
+        // Return the status
+        val ret = JSObject().apply {
+            put("isMicrophoneMuted", isMicrophoneMuted)
+        }
+        call.resolve(ret)
     }
 
     @PluginMethod
@@ -267,44 +509,44 @@ class FlutterCallkitIncomingPlugin : Plugin() {
 
     @PluginMethod
     fun getDeliveredNotifications(call: PluginCall) {
-        val notifications = JSArray()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val activeNotifications = notificationManager!!.activeNotifications
+       val notifications = JSArray()
+       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+           val activeNotifications = notificationManager!!.activeNotifications
 
-            for (notif in activeNotifications) {
-                val jsNotif = JSObject()
+           for (notif in activeNotifications) {
+               val jsNotif = JSObject()
 
-                jsNotif.put("id", notif.id)
-                jsNotif.put("tag", notif.tag)
+               jsNotif.put("id", notif.id)
+               jsNotif.put("tag", notif.tag)
 
-                val notification = notif.notification
-                if (notification != null) {
-                    jsNotif.put(
-                        "title",
-                        notification.extras.getCharSequence(Notification.EXTRA_TITLE)
-                    )
-                    jsNotif.put(
-                        "body",
-                        notification.extras.getCharSequence(Notification.EXTRA_TEXT)
-                    )
-                    jsNotif.put("group", notification.group)
-                    jsNotif.put(
-                        "groupSummary",
-                        0 != (notification.flags and Notification.FLAG_GROUP_SUMMARY)
-                    )
+               val notification = notif.notification
+               if (notification != null) {
+                   jsNotif.put(
+                       "title",
+                       notification.extras.getCharSequence(Notification.EXTRA_TITLE)
+                   )
+                   jsNotif.put(
+                       "body",
+                       notification.extras.getCharSequence(Notification.EXTRA_TEXT)
+                   )
+                   jsNotif.put("group", notification.group)
+                   jsNotif.put(
+                       "groupSummary",
+                       0 != (notification.flags and Notification.FLAG_GROUP_SUMMARY)
+                   )
 
-                    val extras = JSObject()
+                   val extras = JSObject()
 
-                    for (key in notification.extras.keySet()) {
-                        extras.put(key, notification.extras.getString(key))
-                    }
+                   for (key in notification.extras.keySet()) {
+                       extras.put(key, notification.extras.getString(key))
+                   }
 
-                    jsNotif.put("data", extras)
-                }
+                   jsNotif.put("data", extras)
+               }
 
-                notifications.put(jsNotif)
-            }
-        }
+               notifications.put(jsNotif)
+           }
+       }
 
         val result = JSObject()
         result.put("notifications", notifications)
@@ -363,6 +605,13 @@ class FlutterCallkitIncomingPlugin : Plugin() {
         val data = JSObject()
         data.put("value", token)
         notifyListeners(EVENT_TOKEN_CHANGE, data, true)
+    }
+
+    fun checkOnMessage(){
+        val sharedPreferences: SharedPreferences = context!!.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("callTest", "callingTst")
+        editor.apply()
     }
 
     fun sendError(error: String?) {
@@ -550,12 +799,19 @@ class FlutterCallkitIncomingPlugin : Plugin() {
             }
             lastIncomingCallEvent = null
         }
+
         if (lastAcceptCallEvent != null) {
             for ((key, value) in lastAcceptCallEvent!!) {
                 sendEvent(key, value)
             }
             lastAcceptCallEvent = null
         }
+        // if (lastMessage != null) {
+        //     for ((key, value) in lastMessage!!) {
+        //         sendEvent(key, value)
+        //     }
+        //     lastMessage = null
+        // }
         if (lastEndCallEvent != null) {
             for ((key, value) in lastEndCallEvent!!) {
                 sendEvent(key, value)
@@ -573,7 +829,20 @@ class FlutterCallkitIncomingPlugin : Plugin() {
             when (name) {
                 "sendPendingAcceptEvent" -> {
                     sendPendingAcceptEvent()
-                    call.resolve()
+                     Log.d("Last doMethod", "$lastMessage")
+                    if(lastMessage != null){
+                         val callOptions: String? = lastMessage!!.data["call"]
+                         if(callOptions != null){
+                            val jsObject = JSObject()
+                            jsObject.put("pending", callOptions)
+                            call.resolve(jsObject)
+                         }
+                    }
+                    val jsObject = JSObject()
+                    jsObject.put("nothing", "no data")
+                    call.resolve(jsObject)
+                    
+
                 }
 
                 "checkIsVersionOk" -> {

@@ -149,6 +149,21 @@ export interface PushNotificationsPlugin {
     listenerFunc: (notification: ActionPerformed) => void,
   ): Promise<PluginListenerHandle>;
   addListener(even: Events, cb: (data: CallKitParams) => void): Promise<PluginListenerHandle>;
+  addListener(
+    eventName: 'onIceCandidate',
+    cb: (data: { iceCandidate: RTCIceCandidate }) => void,
+  ): Promise<PluginListenerHandle>;
+  addListener(
+    eventName: 'onConnectionStateChange',
+    cb: (data: { connectionState: RTCIceConnectionState }) => void,
+  ): Promise<PluginListenerHandle>;
+  addListener(eventName: 'onDataReceived', cb: (data: { dataReceived: string }) => void): Promise<PluginListenerHandle>;
+  addListener(eventName: 'videoIntentConfirm', cb: (data: { confirm: string }) => void): Promise<PluginListenerHandle>;
+  addListener(
+    eventName: 'videoIntenthandle',
+    cb: (data: { contact: string; callCapability: string }) => void,
+  ): Promise<PluginListenerHandle>;
+
   /**
    * Remove all native listeners for this plugin.
    *
@@ -561,6 +576,7 @@ export interface CallKitParams {
   handle?: string;
   type?: number;
   isOnHold?: boolean;
+  isMuted?: boolean;
   normalHandle?: number;
   duration?: number;
   textAccept?: string;
@@ -583,6 +599,54 @@ export type Responses =
   | { isVersionOk: boolean }
   | { devicePushTokenVoIP: string };
 
+export enum SdpType {
+  offer = 'offer',
+  prAnswer = 'prAnswer',
+  answer = 'answer',
+  rollback = 'rollback',
+}
+
+export interface SessionDescription {
+  type: SdpType;
+  sdp: string;
+}
+
 export interface FlutterCallkitIncomingPlugin extends PushNotificationsPlugin {
+  unregisterProximityListener(): Promise<{ status: string }>;
+  toggleSpeaker({ useSpeaker }: { useSpeaker: boolean }): Promise<{ isSpeakerOn: boolean }>;
+  isSpeakerOn(): Promise<{ isSpeakerOn: boolean }>;
+  toggleMicrophone({ mute }: { mute: boolean }): Promise<{ isMicrophoneMuted: boolean }>;
+  isMicrophoneMuted(): Promise<{ isMicrophoneMuted: boolean }>;
+  createAnswer(): Promise<SessionDescription>;
+  createOffer({
+    iceServers,
+  }: {
+    iceServers?: [
+      {
+        urls: string[];
+        username: string;
+        credential: string;
+      },
+    ];
+  }): Promise<SessionDescription>;
+  setRemoteSdp({
+    sdp,
+    type,
+    iceServers,
+  }: {
+    sdp: string;
+    type: string;
+    iceServers?: [
+      {
+        urls: string[];
+        username: string;
+        credential: string;
+      },
+    ];
+  }): Promise<{ status: string }>;
+  setRemoteIceCandidate({ sdpMLineIndex, sdpMid, candidate }: RTCIceCandidateInit): Promise<{ status: string }>;
+  closePeerConnection(): Promise<{ status: string }>;
+  getPeerConnectionStatus(): Promise<{ status: string }>;
+  getRemoteDescriptionStatus(): Promise<{ status: string }>;
   doMethod(options: { options: string; methodName: MethodNames; parsedOptions: CallKitParams }): Promise<Responses>;
 }

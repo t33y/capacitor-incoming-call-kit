@@ -2,6 +2,8 @@ import UIKit
 import CallKit
 import Capacitor
 import AVFoundation
+import WebRTC
+import Intents
 
 import Foundation
 import UserNotifications
@@ -19,10 +21,21 @@ enum PushNotificationsPermissions: String {
 
 @available(iOS 10.0, *)
 @objc(SwiftFlutterCallkitIncomingPlugin)
-public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXProviderDelegate {
+public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXProviderDelegate, WebRTCClientDelegate {
     public let identifier = "SwiftFlutterCallkitIncomingPlugin"
     public let jsName = "FlutterCallkitIncoming"
     public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name:"getRemoteDescriptionStatus", returnType: CAPPluginReturnPromise ),
+        CAPPluginMethod(name:"toggleSpeaker", returnType: CAPPluginReturnPromise ),
+        CAPPluginMethod(name:"isSpeakerOn", returnType: CAPPluginReturnPromise ),
+        CAPPluginMethod(name:"toggleMicrophone", returnType: CAPPluginReturnPromise ),
+        CAPPluginMethod(name:"isMicrophoneMuted", returnType: CAPPluginReturnPromise ),
+        CAPPluginMethod(name:"setRemoteSdp", returnType: CAPPluginReturnPromise ),
+        CAPPluginMethod(name:"setRemoteIceCandidate", returnType: CAPPluginReturnPromise ),
+        CAPPluginMethod(name: "createAnswer", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "createOffer", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "closePeerConnection", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getPeerConnectionStatus", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "doMethod", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "register", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "unregister", returnType: CAPPluginReturnPromise),
@@ -57,13 +70,13 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
     @objc public private(set) static var sharedInstance: SwiftFlutterCallkitIncomingPlugin!
     
     private var callManager: CallManager
-    
+    private var webRTCManager: NativeWebrtcManager?
     private var sharedProvider: CXProvider? = nil
     
     private var outgoingCall : Call?
     private var answerCall : Call?
     
-    private var data: Data?
+    private var data: CallData?
     private var isFromPushKit: Bool = false
     private var silenceEvents: Bool = false
     private var lastEndCallEvent: [String : Any]?
@@ -90,6 +103,44 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         //     NSLog("postRequest ignored for \(String(describing: url)) as app is active")
         // }
     }
+
+
+    
+    func webRTCClient(_ client: NativeWebrtcManager, didDiscoverLocalCandidate candidate: RTCIceCandidate) {
+        DispatchQueue.main.async {
+            self.notifyListeners("onIceCandidate", data: ["iceCandidate":["candidate": candidate.sdp,
+                                                                        "sdpMLineIndex":candidate.sdpMLineIndex,
+                                                                          "sdpMid": candidate.sdpMid ?? ""]])
+        }
+
+    }
+    
+    func webRTCClient(_ client: NativeWebrtcManager, didChangeConnectionState state: RTCIceConnectionState) {
+
+        DispatchQueue.main.async {
+            self.notifyListeners("onConnectionStateChange", data:["connectionState": state.description])
+//            if state == .connected{
+//                guard let data = self.getAcceptedCall() else{
+//                    return print("Can not connect call. invalid call data")
+//                }
+//                print("Call connected calling connectedCall")
+//                self.connectedCall(data)
+//            }
+            
+        }
+           
+
+    }
+    
+    func webRTCClient(_ client: NativeWebrtcManager, didReceiveData data: Data) {
+        let base64String = data.base64EncodedString()
+        DispatchQueue.main.async {
+            self.notifyListeners("onDataReceived", data: ["dataReceived": base64String])
+        }
+        
+    }
+    
+
     
     public func sendEvent(_ event: String, _ body: [String : Any]?) {
         if silenceEvents {
@@ -98,15 +149,16 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         } else {
             if (self.bridge != nil) {
                 self.notifyListeners(event, data: body ?? [:])
-            } else {
-                if (event == SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ACCEPT) {
-                    lastAcceptCallEvent = body
-                } else if (event == SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_INCOMING) {
-                    lastIncomingCallEvent = body
-                } else if (event == SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED) {
-                    lastEndCallEvent = body
-                }
-            }
+            } 
+           else {
+               if (event == SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ACCEPT) {
+                   lastAcceptCallEvent = body
+               } else if (event == SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_INCOMING) {
+                   lastIncomingCallEvent = body
+               } else if (event == SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED) {
+                   lastEndCallEvent = body
+               }
+           }
         }
         
     }
@@ -136,15 +188,111 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
                                                selector: #selector(self.didFailToRegisterForRemoteNotificationsWithError(notification:)),
                                                name: .capacitorDidFailToRegisterForRemoteNotifications,
                                                object: nil)
+        
+//        self.webRTCManager = NativeWebrtcManager(iceServers:["stun:stun.l.google.com:19302",
+//                                  "stun:stun1.l.google.com:19302",
+//                                  "stun:stun2.l.google.com:19302",
+//                                  "stun:stun3.l.google.com:19302",
+//                                  "stun:stun4.l.google.com:19302"]) // Create only when needed
+//        
+//        self.webRTCManager?.delegate = self
+//        
+//        NotificationCenter.default.addObserver(self, selector: #selector(handleVideoCallRequest(_:)), name: .videoCallRequested, object: nil)
     }
+    
     
     public override init() {
         callManager = CallManager()
         super.init()
+//                if self.webRTCManager == nil {
+//                    self.webRTCManager = NativeWebrtcManager(iceServers:["stun:stun.l.google.com:19302",
+//                                              "stun:stun1.l.google.com:19302",
+//                                              "stun:stun2.l.google.com:19302",
+//                                              "stun:stun3.l.google.com:19302",
+//                                              "stun:stun4.l.google.com:19302"]) // Create only when needed
+//                    self.webRTCManager?.delegate = self
+//                    print("✅ WebRTCManager initialized in init")
+//                }
+        
     }
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+
+        @objc func toggleSpeaker(_ call: CAPPluginCall) {
+        let useSpeaker = call.getBool("useSpeaker") ?? false
+        let audioSession = AVAudioSession.sharedInstance()
+        
+        do {
+            try audioSession.setCategory(.playAndRecord, mode: .voiceChat, options: [.allowBluetooth, .allowBluetoothA2DP])
+//            try audioSession.setCategory(.playAndRecord, options: useSpeaker ? .defaultToSpeaker : [])
+            try audioSession.overrideOutputAudioPort(useSpeaker ? .speaker : .none)
+            try audioSession.setActive(true)
+            call.resolve(["isSpeakerOn": useSpeaker])
+        } catch {
+            call.reject("Unable to toggle speaker", error.localizedDescription)
+        }
+    }
+
+    @objc func isSpeakerOn(_ call: CAPPluginCall) {
+        let audioSession = AVAudioSession.sharedInstance()
+        let isSpeakerOn = audioSession.currentRoute.outputs.contains { $0.portType == .builtInSpeaker }
+        call.resolve(["isSpeakerOn": isSpeakerOn])
+    }
+
+        @objc func toggleMicrophone(_ call: CAPPluginCall) {
+        // Get the "mute" parameter from the call
+        let mute = call.getBool("mute", false)
+
+        // Get the shared audio session
+        let audioSession = AVAudioSession.sharedInstance()
+
+        do {
+            // Set the microphone mute state
+            try audioSession.setActive(!mute)
+            if mute {
+                try audioSession.overrideOutputAudioPort(.none)
+            } else {
+                try audioSession.overrideOutputAudioPort(.speaker)
+            }
+
+            // Return the current microphone status
+            let isMuted = !audioSession.isInputAvailable
+            let ret = [
+                "isMicrophoneMuted": isMuted
+            ]
+            call.resolve(ret)
+        } catch {
+            // Handle errors
+            call.reject("Failed to toggle microphone: \(error.localizedDescription)")
+        }
+    }
+
+    @objc func isMicrophoneMuted(_ call: CAPPluginCall) {
+        // Get the shared audio session
+        let audioSession = AVAudioSession.sharedInstance()
+
+        // Check if the microphone is muted
+        let isMuted = !audioSession.isInputAvailable
+
+        // Return the status
+        let ret = [
+            "isMicrophoneMuted": isMuted
+        ]
+        call.resolve(ret)
+    }
+    
+
+    
+    @objc func handleVideoCallRequest(_ notification: Notification) {
+        print("requesting video call")
+        guard let userInfo = notification.userInfo,
+              let contact = userInfo["contact"] as? String else { return }
+
+        // Notify JavaScript
+        self.notifyListeners("videoIntenthandle", data: ["contact": contact])
+
     }
 
     /**
@@ -167,9 +315,152 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         }
     }
 
-    /**
-     * Request notification permission
-     */
+        // MARK: - WebRTC
+//    @objc func closePeerConnection(_ call: CAPPluginCall) {
+//        ensureWebRTCManager()
+//    guard let webRTCManager = self.webRTCManager else {
+//        call.reject("WebRTC manager or peer connection is not initialized")
+//        return
+//    }
+//
+//
+//        webRTCManager.peerConnection.close()
+//
+//
+//    call.resolve(["status": "closed"])
+//        
+//    }
+    @objc func createOffer(_ call: CAPPluginCall) {
+        
+        if let createNew = call.options["iceServers"]as? [[String: Any]] {
+            let iceServersConfig = createNew.compactMap { server -> RTCIceServer? in
+                guard let urls = server["urls"] as? [String] else { return nil }
+                return RTCIceServer(
+                    urlStrings: urls,
+                    username: server["username"] as? String,
+                    credential: server["credential"] as? String
+                )
+            }
+            self.webRTCManager?.close()
+            self.webRTCManager = NativeWebrtcManager(iceServers:iceServersConfig) // Create only when needed
+            self.webRTCManager?.delegate = self
+            print("✅ WebRTCManager initialization requested")
+        }
+        
+            guard let webRTCManager = self.webRTCManager else {
+        call.reject("WebRTC manager not initialized")
+        return
+    }
+        webRTCManager.offer{(sdp) in
+            let sessionDescription = SessionDescription(from: sdp)
+                 
+                 let sessionDescriptionDict: [String: Any] = [
+                     "sdp": sessionDescription.sdp,
+                     "type": sessionDescription.type.rawValue
+                 ]
+                call.resolve(sessionDescriptionDict)
+            }
+        
+    }
+    
+    @objc func createAnswer(_ call: CAPPluginCall) {
+//        ensureWebRTCManager()
+            guard let webRTCManager = self.webRTCManager else {
+        call.reject("WebRTC manager not initialized")
+        return
+    }
+        webRTCManager.answer{(sdp) in
+
+            let sessionDescription = SessionDescription(from: sdp)
+                 
+                 let sessionDescriptionDict: [String: Any] = [
+                    "sdp": sessionDescription.sdp,
+                     "type": sessionDescription.type.rawValue
+                 ]
+                call.resolve(sessionDescriptionDict)
+            }
+        
+    }
+    
+    @objc func setRemoteIceCandidate(_ call: CAPPluginCall) {
+        guard let sdpMid = call.getString("sdpMid"),
+              let sdpMLineIndex = call.getInt("sdpMLineIndex"),
+              let candidate = call.getString("candidate") else {
+            call.reject("Missing ICE candidate parameters")
+            return
+        }
+
+        let rtcCandidate = RTCIceCandidate(
+            sdp: candidate,
+            sdpMLineIndex: Int32(sdpMLineIndex),
+            sdpMid: sdpMid
+        )
+        
+        if self.webRTCManager == nil {
+            call.resolve(["status": "no peerConnection"])
+        }
+
+        
+        self.webRTCManager?.set(remoteCandidate: rtcCandidate){error in
+            if let error = error {
+                call.reject("Failed to add ICE Candidate: \(error.localizedDescription)")
+            } else {
+                print("ice candidate added successfully")
+                call.resolve(["status": "ICE Candidate added"])
+            }
+            }
+        
+    }
+    
+    @objc func setRemoteSdp(_ call: CAPPluginCall) {
+        guard let sdp = call.getString("sdp"),
+              let sdpTypeString = call.getString("type"),
+              let sdpType = SdpType(from: sdpTypeString) else {
+            call.reject("Invalid parameters")
+            return
+        }
+        if let createNew = call.options["iceServers"]as? [[String: Any]] {
+            let iceServersConfig = createNew.compactMap { server -> RTCIceServer? in
+                guard let urls = server["urls"] as? [String] else { return nil }
+                return RTCIceServer(
+                    urlStrings: urls,
+                    username: server["username"] as? String,
+                    credential: server["credential"] as? String
+                )
+            }
+            self.webRTCManager?.close()
+            self.webRTCManager = NativeWebrtcManager(iceServers:iceServersConfig) // Create only when needed
+            self.webRTCManager?.delegate = self
+            print("✅ WebRTCManager initialization requested")
+        }
+        
+        let rtcSdpType = sdpType.rtcSdpType
+        
+        let rtcSessionDescription = RTCSessionDescription(type: rtcSdpType, sdp: sdp )
+        self.webRTCManager?.set(remoteSdp: rtcSessionDescription){error in
+            if let error = error {
+                call.reject("Failed to add sdp: \(error.localizedDescription)")
+            } else {
+                print("sdp set successfully")
+                call.resolve(["status": "Sdp added"])
+            }
+        }
+        
+    }
+    
+    @objc func getRemoteDescriptionStatus(_ call: CAPPluginCall) {
+        let status = self.webRTCManager?.remoteDescriptionStatus()
+        call.resolve(["status": status ?? "unavailable"])
+    }
+
+        
+    @objc func getPeerConnectionStatus(_ call: CAPPluginCall) {
+        let status = self.webRTCManager != nil ? "active" : "not initialized"
+        call.resolve(["status": status])
+    }
+
+    
+    // MARK: - Request notification permission
     @objc override public func requestPermissions(_ call: CAPPluginCall) {
         self.notificationDelegateHandler.requestPermissions { granted, error in
             guard error == nil else {
@@ -294,6 +585,8 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
             ])
         }
     }
+    
+    
 
     @objc public func didFailToRegisterForRemoteNotificationsWithError(notification: NSNotification) {
         appDelegateRegistrationCalled = true
@@ -305,6 +598,8 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         ])
     }
     
+    // MARK: - Callkit Implementation
+    
     @objc public func doMethod(_ pluginCall: CAPPluginCall) {
         let name = pluginCall.getString("methodName") ?? ""
         let options = pluginCall.getObject("parsedOptions")
@@ -314,14 +609,19 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
             break
         case "sendPendingAcceptEvent":
             sendPendingAcceptEvent()
+            if lastAcceptCallEvent != nil{
+                pluginCall.resolve(lastAcceptCallEvent ?? [:])
+                return
+            }
             pluginCall.resolve()
+            
             break
         case "showCallkitIncoming":
             guard let getArgs = options else {
                 pluginCall.resolve()
                 return
             }
-            self.data = Data(args: getArgs)
+            self.data = CallData(args: getArgs)
             showCallkitIncoming(self.data!, fromPushKit: false)
             pluginCall.resolve()
             break
@@ -329,15 +629,15 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
             pluginCall.resolve()
             break
         case "startCall":
-            guard let args = options else {
-                pluginCall.resolve()
-                return
-            }
+//            guard let args = options else {
+//                pluginCall.resolve()
+//                return
+//            }
             if let getArgs = options {
-                self.data = Data(args: getArgs)
+                self.data = CallData(args: getArgs)
                 self.startCall(self.data!, fromPushKit: false)
+                // self.createOffer(pluginCall)
             }
-            pluginCall.resolve()
             break
         case "endCall":
             guard let args = options else {
@@ -348,7 +648,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
                 self.endCall(self.data!)
             }else{
                 if let getArgs = options {
-                    self.data = Data(args: getArgs)
+                    self.data = CallData(args: getArgs)
                     self.endCall(self.data!)
                 }
             }
@@ -397,7 +697,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
                 self.connectedCall(self.data!)
             }else{
                 if let getArgs = options {
-                    self.data = Data(args: getArgs)
+                    self.data = CallData(args: args)
                     self.connectedCall(self.data!)
                 }
             }
@@ -451,7 +751,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         return UserDefaults.standard.string(forKey: devicePushTokenVoIP) ?? ""
     }
     
-    @objc public func getAcceptedCall() -> Data? {
+    @objc public func getAcceptedCall() -> CallData? {
         NSLog("Call data ids \(String(describing: data?.uuid)) \(String(describing: answerCall?.uuid.uuidString))")
         if data?.uuid.lowercased() == answerCall?.uuid.uuidString.lowercased() {
             return data
@@ -482,43 +782,77 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         }
     }
     
-    @objc public func showCallkitIncoming(_ data: Data, fromPushKit: Bool) {
+    @objc public func showCallkitIncoming(_ data: CallData, fromPushKit: Bool) {
         self.isFromPushKit = fromPushKit
         if(fromPushKit){
             self.data = data
         }
-        if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-            var remoteHandle: CXHandle?
-            remoteHandle = CXHandle(type: self.getHandleType(data.handleType), value: data.getEncryptHandle())
-            appDelegate.reportIncomingCall(data, remoteHandle!) { error in
-                if(error == nil) {
-                    self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_INCOMING, data.toJSON())
-                    var url = data.extra["callResponseUrl"] as? String
-                    let incomingBody = data.extra["incomingBody"] as? String
-                    let sessionToken = data.extra["sessionToken"] as? String
-                    NSLog("ACTION_CALL_INCOMING url: \(String(describing: url)), incomingBody: \(String(describing: incomingBody)), sessionToken: \(String(describing: sessionToken))")
-                    if (url != nil) {
-                        if (sessionToken != nil) {
-                            url = url! + "?sessionToken=" + sessionToken!
-                        }
-                        self.postRequest(url!, incomingBody)
-                    }
-                }
+        
+        var handle: CXHandle?
+        handle = CXHandle(type: self.getHandleType(data.handleType), value: data.getEncryptHandle())
+        
+        let callUpdate = CXCallUpdate()
+        callUpdate.remoteHandle = handle
+        callUpdate.supportsDTMF = data.supportsDTMF
+        callUpdate.supportsHolding = data.supportsHolding
+        callUpdate.supportsGrouping = data.supportsGrouping
+        callUpdate.supportsUngrouping = data.supportsUngrouping
+        callUpdate.hasVideo = data.type > 0 ? true : false
+        callUpdate.localizedCallerName = data.nameCaller
+        
+        initCallkitProvider(data)
+        
+        let uuid = UUID(uuidString: data.uuid)
+        
+        configurAudioSession()
+        self.sharedProvider?.reportNewIncomingCall(with: uuid!, update: callUpdate) { error in
+            if(error == nil) {
+                self.configurAudioSession()
+                let call = Call(uuid: uuid!, data: data)
+                call.handle = data.handle
+                self.callManager.addCall(call)
+                self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_INCOMING, data.toJSON())
+                self.endCallNotExist(data)
             }
         }
+
     }
     
-    @objc public func startCall(_ data: Data, fromPushKit: Bool) {
+    @objc public func startCall(_ data: CallData, fromPushKit: Bool) {
         self.isFromPushKit = fromPushKit
         if(fromPushKit){
             self.data = data
         }
-        DispatchQueue.main.async {
-            if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-                appDelegate.onStartCall(data)
-            }
-        }
+        initCallkitProvider(data)
+        self.callManager.startCall(data)
+        
     }
+    
+//    @objc func addRemoveVideo(_ call: CAPPluginCall) {
+//        guard let isVideo = call.getBool("isVideo"),
+//              let id = call.getString("id") else {
+//            call.reject("Missing ICE candidate parameters")
+//            return
+//        }
+//        let uuid = UUID(uuidString: id)
+//        let callUpdate = CXCallUpdate()
+//        callUpdate.hasVideo = isVideo
+//        DispatchQueue.main.async {
+//            reportCall(
+//                with: uuid,
+//                updated:callUpdate
+//            ){error in
+//                if let error = error {
+//                    call.reject("Failed to update video: \(error.localizedDescription)")
+//                } else {
+//                    call.resolve(["status": isVideo? "Video added":"Video removed"])
+//                }
+//            }
+//        }
+//
+//
+//        
+//    }
     
     @objc public func muteCall(_ callId: String, isMuted: Bool) {
         guard let callId = UUID(uuidString: callId),
@@ -538,27 +872,33 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         }
     }
     
-    @objc public func endCall(_ data: Data) {
+    @objc public func endCall(_ data: CallData) {
+         var call: Call? = nil
         if(self.isFromPushKit){
+            call = Call(uuid: UUID(uuidString: self.data!.uuid)!, data: data)
             self.isFromPushKit = false
             self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, data.toJSON())
+        }else {
+            call = Call(uuid: UUID(uuidString: data.uuid)!, data: data)
         }
+            guard let validCall = call else {
+        return
+    }
         DispatchQueue.main.async {
-            if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-                appDelegate.onEndCall(data)
-            }
+            self.callManager.endCall(call: validCall)
         }
     }
     
-    @objc public func connectedCall(_ data: Data) {
+    @objc public func connectedCall(_ data: CallData) {
+        var call: Call? = nil
         if(self.isFromPushKit){
+            call = Call(uuid: UUID(uuidString: self.data!.uuid)!, data: data)
             self.isFromPushKit = false
+        }else {
+            call = Call(uuid: UUID(uuidString: data.uuid)!, data: data)
         }
-        DispatchQueue.main.async {
-            if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-                appDelegate.onConnectCall(data)
-            }
-        }
+        self.callManager.connectedCall(call: call!)
+
     }
     
     @objc public func activeCalls() -> [[String: Any]] {
@@ -593,7 +933,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
     }
     
     
-    func endCallNotExist(_ data: Data) {
+    func endCallNotExist(_ data: CallData) {
         DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(data.duration)) {
             let call = self.callManager.callWithUUID(uuid: UUID(uuidString: data.uuid)!)
             if (call != nil && self.answerCall == nil && self.outgoingCall == nil) {
@@ -604,7 +944,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
     
     
     
-    func callEndTimeout(_ data: Data) {
+    func callEndTimeout(_ data: CallData) {
         self.saveEndCall(data.uuid, 3)
         guard let call = self.callManager.callWithUUID(uuid: UUID(uuidString: data.uuid)!) else {
             return
@@ -629,7 +969,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         return typeDefault
     }
     
-    func initCallkitProvider(_ data: Data) {
+    func initCallkitProvider(_ data: CallData) {
         if(self.sharedProvider == nil){
             self.sharedProvider = CXProvider(configuration: createConfiguration(data))
             self.sharedProvider?.setDelegate(self, queue: nil)
@@ -637,7 +977,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         self.callManager.setSharedProvider(self.sharedProvider!)
     }
     
-    func createConfiguration(_ data: Data) -> CXProviderConfiguration {
+    func createConfiguration(_ data: CallData) -> CXProviderConfiguration {
         let configuration = CXProviderConfiguration(localizedName: data.appName)
         configuration.supportsVideo = data.supportsVideo
         configuration.maximumCallGroups = data.maximumCallGroups
@@ -752,6 +1092,8 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         action.fulfill()
     }
     
+    
+    
     public func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         guard let call = self.callManager.callWithUUID(uuid: action.callUUID) else{
             action.fail()
@@ -773,7 +1115,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         }
     }
 
-    public func onEndCall(hasCall: Bool, hasOutgoingCall: Bool, hasAnswerCall: Bool, data: Data?) {
+    public func onEndCall(hasCall: Bool, hasOutgoingCall: Bool, hasAnswerCall: Bool, data: CallData?) {
         if (hasCall == false) {
             if(hasAnswerCall == false && hasOutgoingCall == false){
                 sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_TIMEOUT, data?.toJSON())
@@ -882,6 +1224,11 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
             appDelegate.didActivateAudioSession(audioSession)
         }
+        
+        
+            RTCAudioSession.sharedInstance().audioSessionDidActivate(audioSession)
+            RTCAudioSession.sharedInstance().isAudioEnabled = true
+        
 
         if(self.answerCall?.hasConnected ?? false){
             sendDefaultAudioInterruptionNofificationToStartAudioResource()
@@ -913,7 +1260,10 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
             appDelegate.didDeactivateAudioSession(audioSession)
         }
-
+        
+        RTCAudioSession.sharedInstance().audioSessionDidDeactivate(audioSession)
+        RTCAudioSession.sharedInstance().isAudioEnabled = false
+        
         if self.outgoingCall?.isOnHold ?? false || self.answerCall?.isOnHold ?? false{
             print("Call is on hold")
             return
