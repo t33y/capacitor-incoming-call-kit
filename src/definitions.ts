@@ -618,10 +618,21 @@ export interface FlutterCallkitIncomingPlugin extends PushNotificationsPlugin {
   toggleMicrophone({ mute }: { mute: boolean }): Promise<{ isMicrophoneMuted: boolean }>;
   isMicrophoneMuted(): Promise<{ isMicrophoneMuted: boolean }>;
   createAnswer(): Promise<SessionDescription>;
+  createPeer({
+    iceServers,
+  }: {
+    iceServers: [
+      {
+        urls: string[];
+        username: string;
+        credential: string;
+      },
+    ];
+  }): Promise<{ status: string }>;
   createOffer({
     iceServers,
   }: {
-    iceServers?: [
+    iceServers: [
       {
         urls: string[];
         username: string;

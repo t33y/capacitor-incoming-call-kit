@@ -23,6 +23,7 @@ npx cap sync
 * [`toggleMicrophone(...)`](#togglemicrophone)
 * [`isMicrophoneMuted()`](#ismicrophonemuted)
 * [`createAnswer()`](#createanswer)
+* [`createPeer(...)`](#createpeer)
 * [`createOffer(...)`](#createoffer)
 * [`setRemoteSdp(...)`](#setremotesdp)
 * [`setRemoteIceCandidate(...)`](#setremoteicecandidate)
@@ -113,15 +114,30 @@ createAnswer() => Promise<SessionDescription>
 --------------------
 
 
+### createPeer(...)
+
+```typescript
+createPeer({ iceServers, }: { iceServers: [ { urls: string[]; username: string; credential: string; } ]; }) => Promise<{ status: string; }>
+```
+
+| Param     | Type                                                                                      |
+| --------- | ----------------------------------------------------------------------------------------- |
+| **`__0`** | <code>{ iceServers: [{ urls: string[]; username: string; credential: string; }]; }</code> |
+
+**Returns:** <code>Promise&lt;{ status: string; }&gt;</code>
+
+--------------------
+
+
 ### createOffer(...)
 
 ```typescript
-createOffer({ iceServers, }: { iceServers?: [ { urls: string[]; username: string; credential: string; } ]; }) => Promise<SessionDescription>
+createOffer({ iceServers, }: { iceServers: [ { urls: string[]; username: string; credential: string; } ]; }) => Promise<SessionDescription>
 ```
 
-| Param     | Type                                                                                       |
-| --------- | ------------------------------------------------------------------------------------------ |
-| **`__0`** | <code>{ iceServers?: [{ urls: string[]; username: string; credential: string; }]; }</code> |
+| Param     | Type                                                                                      |
+| --------- | ----------------------------------------------------------------------------------------- |
+| **`__0`** | <code>{ iceServers: [{ urls: string[]; username: string; credential: string; }]; }</code> |
 
 **Returns:** <code>Promise&lt;<a href="#sessiondescription">SessionDescription</a>&gt;</code>
 

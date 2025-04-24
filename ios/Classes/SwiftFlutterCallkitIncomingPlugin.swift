@@ -25,6 +25,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
     public let identifier = "SwiftFlutterCallkitIncomingPlugin"
     public let jsName = "FlutterCallkitIncoming"
     public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name:"createPeer", returnType: CAPPluginReturnPromise ),
         CAPPluginMethod(name:"getRemoteDescriptionStatus", returnType: CAPPluginReturnPromise ),
         CAPPluginMethod(name:"toggleSpeaker", returnType: CAPPluginReturnPromise ),
         CAPPluginMethod(name:"isSpeakerOn", returnType: CAPPluginReturnPromise ),
@@ -127,6 +128,10 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
 //                self.connectedCall(data)
 //            }
             
+            if state == .failed || state == .disconnected{
+                self.webRTCManager?.close()
+                        }
+            
         }
            
 
@@ -198,21 +203,39 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
 //        self.webRTCManager?.delegate = self
 //        
 //        NotificationCenter.default.addObserver(self, selector: #selector(handleVideoCallRequest(_:)), name: .videoCallRequested, object: nil)
+        
+        if self.webRTCManager == nil {
+    let server =        RTCIceServer(
+                urlStrings: ["stun:stun.l.google.com:19302",
+                             "stun:stun1.l.google.com:19302",
+                             "stun:stun2.l.google.com:19302",
+                             "stun:stun3.l.google.com:19302",
+                             "stun:stun4.l.google.com:19302"]
+    
+            )
+            self.webRTCManager = NativeWebrtcManager(iceServers:[server]) // Create only when needed
+            self.webRTCManager?.delegate = self
+            print("✅ WebRTCManager initialized in init")
+        }
     }
     
     
     public override init() {
         callManager = CallManager()
         super.init()
-//                if self.webRTCManager == nil {
-//                    self.webRTCManager = NativeWebrtcManager(iceServers:["stun:stun.l.google.com:19302",
-//                                              "stun:stun1.l.google.com:19302",
-//                                              "stun:stun2.l.google.com:19302",
-//                                              "stun:stun3.l.google.com:19302",
-//                                              "stun:stun4.l.google.com:19302"]) // Create only when needed
-//                    self.webRTCManager?.delegate = self
-//                    print("✅ WebRTCManager initialized in init")
-//                }
+                if self.webRTCManager == nil {
+            let server =        RTCIceServer(
+                        urlStrings: ["stun:stun.l.google.com:19302",
+                                     "stun:stun1.l.google.com:19302",
+                                     "stun:stun2.l.google.com:19302",
+                                     "stun:stun3.l.google.com:19302",
+                                     "stun:stun4.l.google.com:19302"]
+            
+                    )
+                    self.webRTCManager = NativeWebrtcManager(iceServers:[server]) // Create only when needed
+                    self.webRTCManager?.delegate = self
+                    print("✅ WebRTCManager initialized in init")
+                }
         
     }
 
@@ -330,6 +353,34 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
 //    call.resolve(["status": "closed"])
 //        
 //    }
+    @objc func createPeer(_ call: CAPPluginCall) {
+        
+        if let createNew = call.options["iceServers"]as? [[String: Any]] {
+            let iceServersConfig = createNew.compactMap { server -> RTCIceServer? in
+                guard let urls = server["urls"] as? [String] else { return nil }
+                return RTCIceServer(
+                    urlStrings: urls,
+                    username: server["username"] as? String,
+                    credential: server["credential"] as? String
+                )
+            }
+            self.webRTCManager?.close()
+            self.webRTCManager = NativeWebrtcManager(iceServers:iceServersConfig) // Create only when needed
+            self.webRTCManager?.delegate = self
+            print("✅ WebRTCManager initialization requested")
+        }
+        
+            guard let webRTCManager = self.webRTCManager else {
+        call.reject("WebRTC manager not initialized")
+        return
+    }
+
+                call.resolve(["status": "peer created"])
+            
+        
+    }
+    
+    
     @objc func createOffer(_ call: CAPPluginCall) {
         
         if let createNew = call.options["iceServers"]as? [[String: Any]] {
@@ -886,6 +937,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
     }
         DispatchQueue.main.async {
             self.callManager.endCall(call: validCall)
+            self.webRTCManager?.close()
         }
     }
     
@@ -908,6 +960,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
     @objc public func endAllCalls() {
         self.isFromPushKit = false
         self.callManager.endCallAlls()
+        self.webRTCManager?.close()
     }
     
     public func saveEndCall(_ uuid: String, _ reason: Int) {
@@ -938,6 +991,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
             let call = self.callManager.callWithUUID(uuid: UUID(uuidString: data.uuid)!)
             if (call != nil && self.answerCall == nil && self.outgoingCall == nil) {
                 self.callEndTimeout(data)
+                self.webRTCManager?.close()
             }
         }
     }
@@ -1138,6 +1192,7 @@ public class SwiftFlutterCallkitIncomingPlugin: CAPPlugin, CAPBridgedPlugin, CXP
         }else {
             sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, data?.toJSON())
         }
+        self.webRTCManager?.close()
     }
     
     

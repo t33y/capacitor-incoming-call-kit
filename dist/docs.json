@@ -1,0 +1,841 @@
+{
+  "api": {
+    "name": "FlutterCallkitIncomingPlugin",
+    "slug": "fluttercallkitincomingplugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "unregisterProximityListener",
+        "signature": "() => Promise<{ status: string; }>",
+        "parameters": [],
+        "returns": "Promise<{ status: string; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "unregisterproximitylistener"
+      },
+      {
+        "name": "toggleSpeaker",
+        "signature": "({ useSpeaker }: { useSpeaker: boolean; }) => Promise<{ isSpeakerOn: boolean; }>",
+        "parameters": [
+          {
+            "name": "__0",
+            "docs": "",
+            "type": "{ useSpeaker: boolean; }"
+          }
+        ],
+        "returns": "Promise<{ isSpeakerOn: boolean; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "togglespeaker"
+      },
+      {
+        "name": "isSpeakerOn",
+        "signature": "() => Promise<{ isSpeakerOn: boolean; }>",
+        "parameters": [],
+        "returns": "Promise<{ isSpeakerOn: boolean; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "isspeakeron"
+      },
+      {
+        "name": "toggleMicrophone",
+        "signature": "({ mute }: { mute: boolean; }) => Promise<{ isMicrophoneMuted: boolean; }>",
+        "parameters": [
+          {
+            "name": "__0",
+            "docs": "",
+            "type": "{ mute: boolean; }"
+          }
+        ],
+        "returns": "Promise<{ isMicrophoneMuted: boolean; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "togglemicrophone"
+      },
+      {
+        "name": "isMicrophoneMuted",
+        "signature": "() => Promise<{ isMicrophoneMuted: boolean; }>",
+        "parameters": [],
+        "returns": "Promise<{ isMicrophoneMuted: boolean; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "ismicrophonemuted"
+      },
+      {
+        "name": "createAnswer",
+        "signature": "() => Promise<SessionDescription>",
+        "parameters": [],
+        "returns": "Promise<SessionDescription>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "SessionDescription"
+        ],
+        "slug": "createanswer"
+      },
+      {
+        "name": "createPeer",
+        "signature": "({ iceServers, }: { iceServers: [ { urls: string[]; username: string; credential: string; } ]; }) => Promise<{ status: string; }>",
+        "parameters": [
+          {
+            "name": "__0",
+            "docs": "",
+            "type": "{ iceServers: [{ urls: string[]; username: string; credential: string; }]; }"
+          }
+        ],
+        "returns": "Promise<{ status: string; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "createpeer"
+      },
+      {
+        "name": "createOffer",
+        "signature": "({ iceServers, }: { iceServers: [ { urls: string[]; username: string; credential: string; } ]; }) => Promise<SessionDescription>",
+        "parameters": [
+          {
+            "name": "__0",
+            "docs": "",
+            "type": "{ iceServers: [{ urls: string[]; username: string; credential: string; }]; }"
+          }
+        ],
+        "returns": "Promise<SessionDescription>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "SessionDescription"
+        ],
+        "slug": "createoffer"
+      },
+      {
+        "name": "setRemoteSdp",
+        "signature": "({ sdp, type, iceServers, }: { sdp: string; type: string; iceServers?: [ { urls: string[]; username: string; credential: string; } ]; }) => Promise<{ status: string; }>",
+        "parameters": [
+          {
+            "name": "__0",
+            "docs": "",
+            "type": "{ sdp: string; type: string; iceServers?: [{ urls: string[]; username: string; credential: string; }] | undefined; }"
+          }
+        ],
+        "returns": "Promise<{ status: string; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "setremotesdp"
+      },
+      {
+        "name": "setRemoteIceCandidate",
+        "signature": "({ sdpMLineIndex, sdpMid, candidate }: any) => Promise<{ status: string; }>",
+        "parameters": [
+          {
+            "name": "__0",
+            "docs": "",
+            "type": "any"
+          }
+        ],
+        "returns": "Promise<{ status: string; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "RTCIceCandidateInit"
+        ],
+        "slug": "setremoteicecandidate"
+      },
+      {
+        "name": "closePeerConnection",
+        "signature": "() => Promise<{ status: string; }>",
+        "parameters": [],
+        "returns": "Promise<{ status: string; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "closepeerconnection"
+      },
+      {
+        "name": "getPeerConnectionStatus",
+        "signature": "() => Promise<{ status: string; }>",
+        "parameters": [],
+        "returns": "Promise<{ status: string; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "getpeerconnectionstatus"
+      },
+      {
+        "name": "getRemoteDescriptionStatus",
+        "signature": "() => Promise<{ status: string; }>",
+        "parameters": [],
+        "returns": "Promise<{ status: string; }>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [],
+        "slug": "getremotedescriptionstatus"
+      },
+      {
+        "name": "doMethod",
+        "signature": "(options: { options: string; methodName: MethodNames; parsedOptions: CallKitParams; }) => Promise<Responses>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "{ options: string; methodName: MethodNames; parsedOptions: CallKitParams; }"
+          }
+        ],
+        "returns": "Promise<Responses>",
+        "tags": [],
+        "docs": "",
+        "complexTypes": [
+          "Responses",
+          "MethodNames",
+          "CallKitParams"
+        ],
+        "slug": "domethod"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [
+    {
+      "name": "SessionDescription",
+      "slug": "sessiondescription",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "type",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [
+            "SdpType"
+          ],
+          "type": "SdpType"
+        },
+        {
+          "name": "sdp",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "CallKitParams",
+      "slug": "callkitparams",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "id",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "nameCaller",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "appName",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "avatar",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "handle",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "type",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "isOnHold",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "isMuted",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "normalHandle",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "duration",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "textAccept",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "textDecline",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "textMissedCall",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "textCallback",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "rationaleMessagePermission",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "postNotificationMessageRequired",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "missedCallNotification",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [
+            "NotificationParams"
+          ],
+          "type": "NotificationParams"
+        },
+        {
+          "name": "extra",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "{ [key: string]: any; } | undefined"
+        },
+        {
+          "name": "headers",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "{ [key: string]: any; } | undefined"
+        },
+        {
+          "name": "android",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [
+            "AndroidParams"
+          ],
+          "type": "AndroidParams"
+        },
+        {
+          "name": "ios",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [
+            "IOSParams"
+          ],
+          "type": "IOSParams"
+        }
+      ]
+    },
+    {
+      "name": "NotificationParams",
+      "slug": "notificationparams",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "id",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "showNotification",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "subtitle",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "callbackText",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "isShowCallback",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean"
+        },
+        {
+          "name": "int",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number | undefined"
+        }
+      ]
+    },
+    {
+      "name": "AndroidParams",
+      "slug": "androidparams",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "isCustomNotification",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "isCustomSmallExNotification",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "isShowLogo",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "isShowCallID",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "ringtonePath",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "backgroundColor",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "backgroundUrl",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "actionColor",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "textColor",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "incomingCallNotificationChannelName",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "missedCallNotificationChannelName",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "isShowFullLockedScreen",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "isImportant",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "isBot",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        }
+      ]
+    },
+    {
+      "name": "IOSParams",
+      "slug": "iosparams",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "iconName",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "handleType",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "supportsVideo",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "maximumCallGroups",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "maximumCallsPerCallGroup",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "audioSessionMode",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "audioSessionActive",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "audioSessionPreferredSampleRate",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "audioSessionPreferredIOBufferDuration",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "number | undefined"
+        },
+        {
+          "name": "configureAudioSession",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "supportsDTMF",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "supportsHolding",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "supportsGrouping",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "supportsUngrouping",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "ringtonePath",
+          "tags": [],
+          "docs": "",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "name": "SdpType",
+      "slug": "sdptype",
+      "members": [
+        {
+          "name": "offer",
+          "value": "'offer'",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "prAnswer",
+          "value": "'prAnswer'",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "answer",
+          "value": "'answer'",
+          "tags": [],
+          "docs": ""
+        },
+        {
+          "name": "rollback",
+          "value": "'rollback'",
+          "tags": [],
+          "docs": ""
+        }
+      ]
+    }
+  ],
+  "typeAliases": [
+    {
+      "name": "Responses",
+      "slug": "responses",
+      "docs": "",
+      "types": [
+        {
+          "text": "void",
+          "complexTypes": []
+        },
+        {
+          "text": "{ isMuted: boolean }",
+          "complexTypes": []
+        },
+        {
+          "text": "{ calls: CallKitParams[] }",
+          "complexTypes": [
+            "CallKitParams"
+          ]
+        },
+        {
+          "text": "{ isVersionOk: boolean }",
+          "complexTypes": []
+        },
+        {
+          "text": "{ devicePushTokenVoIP: string }",
+          "complexTypes": []
+        }
+      ]
+    },
+    {
+      "name": "MethodNames",
+      "slug": "methodnames",
+      "docs": "",
+      "types": [
+        {
+          "text": "'showCallkitIncoming'",
+          "complexTypes": []
+        },
+        {
+          "text": "'checkIsVersionOk'",
+          "complexTypes": []
+        },
+        {
+          "text": "'sendPendingAcceptEvent'",
+          "complexTypes": []
+        },
+        {
+          "text": "'showCallkitIncomingSilently'",
+          "complexTypes": []
+        },
+        {
+          "text": "'showMissCallNotification'",
+          "complexTypes": []
+        },
+        {
+          "text": "'startCall'",
+          "complexTypes": []
+        },
+        {
+          "text": "'muteCall'",
+          "complexTypes": []
+        },
+        {
+          "text": "'holdCall'",
+          "complexTypes": []
+        },
+        {
+          "text": "'isMuted'",
+          "complexTypes": []
+        },
+        {
+          "text": "'endCall'",
+          "complexTypes": []
+        },
+        {
+          "text": "'callConnected'",
+          "complexTypes": []
+        },
+        {
+          "text": "'endAllCalls'",
+          "complexTypes": []
+        },
+        {
+          "text": "'activeCalls'",
+          "complexTypes": []
+        },
+        {
+          "text": "'getDevicePushTokenVoIP'",
+          "complexTypes": []
+        },
+        {
+          "text": "'silenceEvents'",
+          "complexTypes": []
+        },
+        {
+          "text": "'requestNotificationPermission'",
+          "complexTypes": []
+        },
+        {
+          "text": "'requestFullIntentPermission'",
+          "complexTypes": []
+        },
+        {
+          "text": "'hideCallkitIncoming'",
+          "complexTypes": []
+        },
+        {
+          "text": "'endNativeSubsystemOnly'",
+          "complexTypes": []
+        },
+        {
+          "text": "'setAudioRoute'",
+          "complexTypes": []
+        }
+      ]
+    }
+  ],
+  "pluginConfigs": [
+    {
+      "name": "PushNotifications",
+      "slug": "pushnotifications",
+      "properties": [
+        {
+          "name": "presentationOptions",
+          "tags": [
+            {
+              "text": "1.0.0",
+              "name": "since"
+            },
+            {
+              "text": "[\"badge\", \"sound\", \"alert\"]",
+              "name": "example"
+            }
+          ],
+          "docs": "This is an array of strings you can combine. Possible values in the array are:\n  - `badge`: badge count on the app icon is updated (default value)\n  - `sound`: the device will ring/vibrate when the push notification is received\n  - `alert`: the push notification is displayed in a native dialog\n\nAn empty array can be provided if none of the options are desired.\n\nbadge is only available for iOS.",
+          "complexTypes": [
+            "PresentationOption"
+          ],
+          "type": "PresentationOption[]"
+        }
+      ],
+      "docs": "You can configure the way the push notifications are displayed when the app is in foreground."
+    }
+  ]
+}

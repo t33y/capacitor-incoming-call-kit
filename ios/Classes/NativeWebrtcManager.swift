@@ -122,48 +122,48 @@ class NativeWebrtcManager: NSObject {
         self.remoteDataChannel = nil
         
         // 2. Stop and remove video capturer
-        if let capturer = self.videoCapturer as? RTCCameraVideoCapturer {
-            capturer.stopCapture()
-        }
-        self.videoCapturer = nil
+//        if let capturer = self.videoCapturer as? RTCCameraVideoCapturer {
+//            capturer.stopCapture()
+//        }
+//        self.videoCapturer = nil
         
         // 3. Remove video tracks
-        self.localVideoTrack?.isEnabled = false
-        self.localVideoTrack = nil
-        
-        self.remoteVideoTrack?.isEnabled = false
-        self.remoteVideoTrack = nil
+//        self.localVideoTrack?.isEnabled = false
+//        self.localVideoTrack = nil
+//        
+//        self.remoteVideoTrack?.isEnabled = false
+//        self.remoteVideoTrack = nil
         
         // 4. Clean up peer connection
         self.peerConnection.delegate = nil
         
         // Close all transceivers
-        for transceiver in self.peerConnection.transceivers {
-            let sender = transceiver.sender
-            if let track = sender.track {  // Only track is optional
-                track.isEnabled = false
-
-            }
-            self.peerConnection.removeTrack(sender)
-        }
+//        for transceiver in self.peerConnection.transceivers {
+//            let sender = transceiver.sender
+//            if let track = sender.track {  // Only track is optional
+//                track.isEnabled = false
+//
+//            }
+//            self.peerConnection.removeTrack(sender)
+//        }
         
         self.peerConnection.close()
         
         // 5. Reset audio session
-        self.audioQueue.async { [weak self] in
-            guard let self = self else { return }
-            self.rtcAudioSession.lockForConfiguration()
-            do {
-                RTCAudioSession.sharedInstance().isAudioEnabled = false
-                try self.rtcAudioSession.setActive(false)
-            } catch {
-                debugPrint("Error deactivating audio session: \(error)")
-            }
-            self.rtcAudioSession.unlockForConfiguration()
-        }
-        
+//        self.audioQueue.async { [weak self] in
+//            guard let self = self else { return }
+//            self.rtcAudioSession.lockForConfiguration()
+//            do {
+//                RTCAudioSession.sharedInstance().isAudioEnabled = false
+//                try self.rtcAudioSession.setActive(false)
+//            } catch {
+//                debugPrint("Error deactivating audio session: \(error)")
+//            }
+//            self.rtcAudioSession.unlockForConfiguration()
+//        }
+//        
         // 6. Clear all delegates
-        self.delegate = nil
+//        self.delegate = nil
       }
 
       
