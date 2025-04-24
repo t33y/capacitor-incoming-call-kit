@@ -17,16 +17,16 @@ let package = Package(
         .target(
             name: "Classes",
             dependencies: [
-                "WebRTC",
+                // "WebRTC",
                 // .product(name: "WebRTC", package: "WebRTC"),
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
                 .product(name: "Cordova", package: "capacitor-swift-pm")
             ],
             path: "ios/Classes"),
         
-                .binaryTarget(
-            name: "WebRTC",
-            path: "ios/Frameworks/WebRTC.xcframework"  // Path to the framework
+            //     .binaryTarget(
+            // name: "WebRTC",
+            // path: "ios/Frameworks/WebRTC.xcframework"  // Path to the framework
         )
         
     ]
