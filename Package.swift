@@ -14,6 +14,11 @@ let package = Package(
 //        .package(url: "https://github.com/stasel/WebRTC.git", .upToNextMajor(from:"130.0.0"))
     ],
     targets: [
+                         .binaryTarget(
+             name: "webrtc",
+             path: "Frameworks/WebRTC.xcframework" 
+             
+        ),
         .target(
             name: "Classes",
             dependencies: [
@@ -24,11 +29,7 @@ let package = Package(
             ],
             path: "ios/Classes"),
         
-                 .binaryTarget(
-             name: "webrtc",
-             path: "Frameworks/WebRTC.xcframework"  // Path to the framework
-             
-        )
+
         
     ]
 )
