@@ -7,12 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		338EC4052DBD8353006ECA0B /* CallKitSupport.h in Headers */ = {isa = PBXBuildFile; fileRef = 338EC4042DBD8353006ECA0B /* CallKitSupport.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C66079B6299E4F8962180734 /* Pods_CallKitSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A8190FE0AB4C75391BC244C /* Pods_CallKitSupport.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1A220FA37B7A5C9696C3F82E /* Pods-CallKitSupport.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CallKitSupport.release.xcconfig"; path = "Target Support Files/Pods-CallKitSupport/Pods-CallKitSupport.release.xcconfig"; sourceTree = "<group>"; };
 		338EC4012DBD8353006ECA0B /* CallKitSupport.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CallKitSupport.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		338EC4042DBD8353006ECA0B /* CallKitSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CallKitSupport.h; sourceTree = "<group>"; };
+		8A8190FE0AB4C75391BC244C /* Pods_CallKitSupport.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_CallKitSupport.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BD4216F30DC931F2F0358114 /* Pods-CallKitSupport.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CallKitSupport.debug.xcconfig"; path = "Target Support Files/Pods-CallKitSupport/Pods-CallKitSupport.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -20,17 +22,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C66079B6299E4F8962180734 /* Pods_CallKitSupport.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0AB0791CDB37DC9AC89009BC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8A8190FE0AB4C75391BC244C /* Pods_CallKitSupport.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		338EC3F72DBD8353006ECA0B = {
 			isa = PBXGroup;
 			children = (
-				338EC4032DBD8353006ECA0B /* CallKitSupport */,
 				338EC4022DBD8353006ECA0B /* Products */,
+				C4B724D4BFE38F88768786CD /* Pods */,
+				0AB0791CDB37DC9AC89009BC /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -42,12 +54,14 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		338EC4032DBD8353006ECA0B /* CallKitSupport */ = {
+		C4B724D4BFE38F88768786CD /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				338EC4042DBD8353006ECA0B /* CallKitSupport.h */,
+				BD4216F30DC931F2F0358114 /* Pods-CallKitSupport.debug.xcconfig */,
+				1A220FA37B7A5C9696C3F82E /* Pods-CallKitSupport.release.xcconfig */,
 			);
-			path = CallKitSupport;
+			name = Pods;
+			path = ../Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -57,7 +71,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				338EC4052DBD8353006ECA0B /* CallKitSupport.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -68,6 +81,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 338EC4082DBD8353006ECA0B /* Build configuration list for PBXNativeTarget "CallKitSupport" */;
 			buildPhases = (
+				7F607ED9736F9613B22D5B62 /* [CP] Check Pods Manifest.lock */,
 				338EC3FC2DBD8353006ECA0B /* Headers */,
 				338EC3FD2DBD8353006ECA0B /* Sources */,
 				338EC3FE2DBD8353006ECA0B /* Frameworks */,
@@ -123,6 +137,31 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		7F607ED9736F9613B22D5B62 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-CallKitSupport-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		338EC3FD2DBD8353006ECA0B /* Sources */ = {
@@ -262,6 +301,7 @@
 		};
 		338EC4092DBD8353006ECA0B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BD4216F30DC931F2F0358114 /* Pods-CallKitSupport.debug.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -274,6 +314,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -293,6 +334,7 @@
 		};
 		338EC40A2DBD8353006ECA0B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1A220FA37B7A5C9696C3F82E /* Pods-CallKitSupport.release.xcconfig */;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -305,6 +347,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

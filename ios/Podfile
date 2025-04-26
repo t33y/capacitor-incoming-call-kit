@@ -1,7 +1,12 @@
 platform :ios, '13.0'
 
+use_frameworks!
 
-target 'Classes' do
-   pod 'WebRTC', :path => './Frameworks/WebRTC.podspec'
+project 'CallKitSupport/CallKitSupport.xcodeproj'
+
+
+
+target 'CallKitSupport' do
+   pod 'WebRTCFramework', :path => './Frameworks'
 end
 
