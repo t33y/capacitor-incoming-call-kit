@@ -13,6 +13,7 @@ Flutter Callkit Incoming
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Hien Nguyen' => 'hien@hiennv.com' }
   s.source           = { :path => '.' }
+  s.vendored_frameworks = 'Frameworks/WebRTC.xcframework'
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   s.dependency 'CryptoSwift'
@@ -21,4 +22,5 @@ Flutter Callkit Incoming
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
   s.swift_version = '5.0'
+  s.static_framework = true
 end

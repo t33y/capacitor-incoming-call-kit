@@ -16,7 +16,7 @@ let package = Package(
     targets: [
                          .binaryTarget(
              name: "webrtc",
-             path: "Frameworks/WebRTC.xcframework" 
+             path: "ios/Frameworks/WebRTC.xcframework"
              
         ),
         .target(
@@ -25,7 +25,7 @@ let package = Package(
                  "webrtc",
 //                .product(name: "WebRTC", package: "WebRTC"),
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
-                .product(name: "Cordova", package: "capacitor-swift-pm")
+                .product(name: "Cordova", package: "capacitor-swift-pm"),
             ],
             path: "ios/Classes"),
         
