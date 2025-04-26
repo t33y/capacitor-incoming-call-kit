@@ -1,0 +1,7 @@
+platform :ios, '13.0'
+
+
+target 'Classes' do
+   pod 'WebRTC', :path => './Frameworks/WebRTC.podspec'
+end
+
